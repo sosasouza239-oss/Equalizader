@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Santixx Mic</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0b0f14;
+      color: white;
+      margin: 0;
+    }
+
+    /* IMAGEM TOPO */
+    .banner {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    /* BOTÃO */
+    button {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 15px 25px;
+      border-radius: 50%;
+      border: none;
+      background: #00ff88;
+      color: black;
+      font-weight: bold;
+      box-shadow: 0 0 20px #00ff88;
+    }
+
+    /* SLIDER */
+    input[type=range] {
+      width: 90%;
+      margin-top: 20px;
+    }
+
+    .gain-box {
+      font-size: 28px;
+      margin: 15px 0;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- SUA IMAGEM -->
+<img src="banner.jpg" class="banner">
+
+<div class="container">
+
+  <h3>Gain (%)</h3>
+  <div class="gain-box" id="gainValue">100%</div>
+
+  <input type="range" id="gainSlider" min="0" max="500" value="100">
+
+  <br>
+
+  <button id="micBtn">ON</button>
+
+</div>
+
+<script>
+let audioContext;
+let mic;
+let gainNode;
+let isOn = false;
+
+const btn = document.getElementById("micBtn");
+const slider = document.getElementById("gainSlider");
+const gainValue = document.getElementById("gainValue");
+
+btn.onclick = async () => {
+  if (!isOn) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    mic = audioContext.createMediaStreamSource(stream);
+    gainNode = audioContext.createGain();
+
+    gainNode.gain.value = slider.value / 100;
+
+    mic.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    btn.innerText = "OFF";
+    isOn = true;
+  } else {
+    audioContext.close();
+    btn.innerText = "ON";
+    isOn = false;
+  }
+};
+
+slider.oninput = () => {
+  const value = slider.value;
+
+  if (gainNode) {
+    gainNode.gain.value = value / 100;
+  }
+
+  gainValue.innerText = value + "%";
+};
+</script>
+
+</body>
+</html>
